@@ -51,7 +51,7 @@ function upRole() {
 
 };
 function viewRole() {
-
+    return rolequery
 };
 function viewDept() {
 
