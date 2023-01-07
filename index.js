@@ -38,7 +38,27 @@ function intro() {
     })
 
 };
+function addEmp() {
 
+};
+function addDept() {
+
+};
+function addRole() {
+
+};
+function upRole() {
+
+};
+function viewRole() {
+
+};
+function viewDept() {
+
+};
+function quit() {
+
+};
 
 function init() {
     intro();
