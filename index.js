@@ -1,6 +1,7 @@
 const inquirer = require('./node_modules/inquirer');
 const fs = require('fs');
 const conTab = require('console.table');
+const 
 const { allowedNodeEnvironmentFlags } = require('process');
 
 
@@ -51,10 +52,10 @@ function upRole() {
 
 };
 function viewRole() {
-    return rolequery
+    return viewRoleQuery
 };
 function viewDept() {
-
+    return viewDeptQuery
 };
 function quit() {
 
