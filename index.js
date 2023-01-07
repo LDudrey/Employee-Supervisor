@@ -1,68 +1,89 @@
 const inquirer = require('./node_modules/inquirer');
+const db = require('./js/server');
 const fs = require('fs');
 const conTab = require('console.table');
-const 
-const { allowedNodeEnvironmentFlags } = require('process');
+const View = require("./js/queries");
 
 
-function intro() {
-    inquirer.prompt([
+// https://stackoverflow.com/questions/62860243/inquirer-prompt-exiting-without-an-answer
+async function intro() {
+   const { answers } = await inquirer.prompt([
         {
             type: 'list',
             name: 'intro',
             message: 'What would you like to do?',
-            choices: ['View All Employees',
-                'Add Employee',
+            choices: ['Add Employee',
                 'Add Department',
                 'Add Role',
                 'Update Employee Role',
                 'View All Roles',
                 'View All Departments',
+                'View All Employees',
                 'Quit']
         }
     ]).then(answers => {
-        if (answers.intro === 'Add Employee') {
-            addEmp();
-        } else if (answers.intro === 'Add Department') {
-            addDept();
-        } else if (answers.intro === 'Add Role') {
-            addRole();
-        } else if (answers.intro === 'Update Employee Role') {
-            upRole();
-        } else if (answers.intro === 'View All Roles') {
-            viewRole();
-        } else if (answers.intro === 'View All Departments') {
-            viewDept();
-        } else (answers.intro === 'Quit') {
-            quit();
+        // let choice = intro.choice
+        switch (answers) {
+            case 'Add Employee':
+                addEmp();
+                break;
+            case 'Add Department':
+                addDept();
+                break;
+            case 'Add Role':
+                addRole();
+                break;
+            case 'Update Employee Role':
+                upRole();
+                break;
+            case 'View All Roles':
+                viewRole();
+                break;
+            case 'View All Departments':
+                viewDept();
+                break;
+            case "View All Employees":
+                viewEmp();
+                break;
+            case 'Quit':
+                break;
+
         }
     })
-
 };
-function addEmp() {
-
+function viewEmp() {
+    View.vwEmp().then(([rows]) => {
+        let employees = rows;
+        console.log("\n");
+        console.table(employees);
+    })
+        .then(() => intro())
+        ;
 };
-function addDept() {
+// function addEmp() {
 
-};
-function addRole() {
+// };
+// function addDept() {
 
-};
-function upRole() {
+// };
+// function addRole() {
 
-};
+// };
+// function upRole() {
+
+// };
 function viewRole() {
-    return viewRoleQuery
+    return View.vwRole();
 };
 function viewDept() {
-    return viewDeptQuery
+    return View.vwDept();
 };
-function quit() {
+// function quit() {
 
-};
+// };
 
-function init() {
-    intro();
+async function init() {
+    await intro();
 };
 
 init();

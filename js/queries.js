@@ -1,22 +1,24 @@
+const db = require('./server');
+const conTab = require('console.table');
+
 class View {
     constructor() {
 
     }
+    vwEmp() {
+        return db.promise().query("SELECT * FROM employee")
+    }
     vwRole() {
         return db.promise().query("SELECT * FROM role")
-            .then(([rows, fields]) => {
+            (([rows]) => {
                 console.table([{ rows }]);
             })
-            .catch(console.log)
-            .then(() => db.end());
     }
     vwDept() {
         return db.promise().query("SELECT * FROM department")
-            .then(([rows, fields]) => {
+            (([rows]) => {
                 console.table([{ rows }]);
             })
-            .catch(console.log)
-            .then(() => db.end());
     }
 };
 
@@ -31,15 +33,6 @@ class View {
 //     getName() {
 //       return this.name;
 //     }
-//     getId() {
-//       return this.id;
-//     }
-//     getEmail() {
-//       return this.email;
-//     }
-//     getRole() {
-//       return 'Employee';
-//     }
-//   };
+
 
 module.exports = View;
