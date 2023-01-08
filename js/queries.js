@@ -1,5 +1,4 @@
-const db = require('./server');
-const conTab = require('console.table');
+
 
 class View {
     constructor() {

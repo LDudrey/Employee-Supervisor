@@ -1,30 +1,54 @@
-const express = require('express');
 const mysql = require('mysql2');
 
-const PORT = process.env.PORT || 3001;
-const app = express();
+// module.exports = () => mysql.createConnection(
+//     {
+//         host: 'localhost',
+//         user: 'root',
+//         password: 'xeNoGlP-it8#',
+//         database: 'employee'
+//     });
 
-// Express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+// async function server() {
+//     // get the client
+//     const mysql = require('mysql2/promise');
+//     // create the connection
+//     const db = await mysql.createConnection(
+//         {
+//             host: 'localhost',
+//             user: 'root',
+//             password: 'xeNoGlP-it8#',
+//             database: 'employee'
+//         })};
+
 
 // create the connection to database
 const db = mysql.createConnection(
-  {
-    host: 'localhost',
-    user: 'root',
-    password: 'xeNoGlP-it8#',
-    database: 'test'
-  }
+    {
+        host: 'localhost',
+        user: 'root',
+        password: 'xeNoGlP-it8#',
+        database: 'employee'
+    }
 );
+// db.connect((err) => {
+//     // you should probably add reject instead of throwing error
+//     // reject(new Error());
+//     if(err){throw err;}
+//     console.log('Mysql: Connected');
+// });
+// db.promise = (sql) => {
+//     return new Promise((resolve, reject) => {
+//         db.query(sql, (err, result) => {
+//           if(err){reject(new Error());}
+//           else{resolve(result);}
+//         });
+//     });
+// };
+// console.log('Connected!');
 
-// Default response for any other request (Not Found)
-app.use((req, res) => {
-  res.status(404).end();
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-module.exports = db;
+module.exports = db.promise();
+// 
+// https://codeburst.io/node-js-mysql-and-promises-4c3be599909b
+// https://stackoverflow.com/questions/59290574/mysql-nodejs-then-s-not-a-function
+// https://stackoverflow.com/questions/41825205/sql-execute-is-not-a-function-in-node-js-and-sql-server
+// https://stackoverflow.com/questions/36547292/use-promise-to-process-mysql-return-value-in-node-js
