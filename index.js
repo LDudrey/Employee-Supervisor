@@ -2,7 +2,7 @@ const express = require('express');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 const mysql = require('mysql2');
-const db = require('./js/server');
+const db = require('./config/connection');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -21,8 +21,8 @@ db.connect(err => {
 
 // https://stackoverflow.com/questions/62860243/inquirer-prompt-exiting-without-an-answer
 // https://stackoverflow.com/questions/44961352/inquirer-js-input-answer-is-exiting-process-when-hitting-enter
-function intro() {
-    inquirer.prompt([
+async function intro() {
+    inquirer.prompt(
         {
             type: 'list',
             name: 'intro',
@@ -36,7 +36,7 @@ function intro() {
                 'View All Employees',
                 'Quit']
         }
-    ]).then(answer => {
+    ).then(answer => {
         switch (answer.intro) {
             case 'Add Employee':
                 addEmp();
@@ -59,20 +59,13 @@ function intro() {
             case 'View All Employees':
                 viewEmp();
                 break;
-            case 'Quit':
-                break;
-        }
+            default:
+                db.end();
+        }         
     })
 };
 
-function viewEmp() {
-    db.promise().query("SELECT * FROM employee")
-        .then(([rows, fields]) => {
-            console.table(rows);
-        })
-        .catch(console.log)
-        .then(() => db.end());
-};
+
 // function addEmp() {
 
 // };
@@ -89,17 +82,25 @@ function viewRole() {
     db.promise().query("SELECT * FROM role")
         .then(([rows, fields]) => {
             console.table(rows);
+            intro();
         })
-        .catch(console.log)
-        .then(() => db.end());
+        .catch(e => console.log(e))
 };
 function viewDept() {
     db.promise().query("SELECT * FROM department")
         .then(([rows, fields]) => {
             console.table(rows);
+            intro();
         })
-        .catch(console.log)
-        .then(() => db.end());
+        .catch(e => console.log(e))
+};
+function viewEmp() {
+    db.promise().query("SELECT * FROM employee")
+        .then(([rows, fields]) => {
+            console.table(rows);
+            intro();
+        })
+        .catch(e => console.log(e))        
 };
 
 // Default response for any other request (Not Found)
@@ -107,9 +108,8 @@ app.use((req, res) => {
     res.status(404).end();
 });
 
-// app.listen(PORT, () => {
-//     console.log(`Server running on port ${PORT}`);
-// });
+function init() {
+    intro();
+}
 
-
-intro();
+init();
