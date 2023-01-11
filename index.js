@@ -1,27 +1,20 @@
-const express = require('express');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 const mysql = require('mysql2');
 const db = require('./config/connection');
 
-const PORT = process.env.PORT || 3001;
-const app = express();
-
-// Express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-
 //Connect to database on load
 //https://www.w3schools.com/nodejs/nodejs_mysql.asp
 db.connect(err => {
     if (err) throw err;
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on 3001`);
+    intro();
 });
 
 
 // https://stackoverflow.com/questions/62860243/inquirer-prompt-exiting-without-an-answer
 // https://stackoverflow.com/questions/44961352/inquirer-js-input-answer-is-exiting-process-when-hitting-enter
-async function intro() {
+function intro() {
     inquirer.prompt(
         {
             type: 'list',
@@ -75,9 +68,17 @@ async function intro() {
 // function addRole() {
 
 // };
-// function upRole() {
-
-// };
+function upRole() {
+    inquirer.prompt(
+        {
+            type: 'list',
+            name: 'employee',
+            // https://stackoverflow.com/questions/6257619/how-get-an-apostrophe-in-a-string-in-javascript
+            message: 'Which employee\'s role do you want to update?',
+            choices: []
+        }
+    )
+ };
 function viewRole() {
     db.promise().query("SELECT * FROM role")
         .then(([rows, fields]) => {
@@ -102,14 +103,3 @@ function viewEmp() {
         })
         .catch(e => console.log(e))        
 };
-
-// Default response for any other request (Not Found)
-app.use((req, res) => {
-    res.status(404).end();
-});
-
-function init() {
-    intro();
-}
-
-init();
