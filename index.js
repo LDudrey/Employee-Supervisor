@@ -11,9 +11,7 @@ db.connect(err => {
     intro();
 });
 
-
-// https://stackoverflow.com/questions/62860243/inquirer-prompt-exiting-without-an-answer
-// https://stackoverflow.com/questions/44961352/inquirer-js-input-answer-is-exiting-process-when-hitting-enter
+// https://stackoverflow.com/questions/6257619/how-get-an-apostrophe-in-a-string-in-javascript
 function intro() {
     inquirer.prompt(
         {
@@ -63,15 +61,29 @@ function addEmp() {
     inquirer.prompt([
         {
             type: 'input',
-            name: 'addemp',
+            name: 'firstName',
             message: 'What is the employee\'s first name?',
-        }
+        },
         {
             type: 'input',
-            name: 'addemp',
+            name: 'lastName',
             message: 'What is the employee\'s last name?',
-        }
-    ])
+        },
+        {
+            type: 'list',
+            name: 'role',
+            message: 'What is the employee\'s role?',
+            choices: [list of roles],
+        },
+        {
+            type: 'list',
+            name: 'mng',
+            message: 'Who is the employee\'s manager?',
+            choices: [list of managers],
+        },
+    ]).then(answer => {
+        console.log(`Added ${answer.firstName} ${answer.lastName} to the database`);
+    });
 };
 
 function addDept() {
@@ -79,20 +91,57 @@ function addDept() {
 };
 
 function addRole() {
-
-};
-
-function upRole() {
-    inquirer.prompt(
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'nameRole',
+            message: 'What is the name of the role?',
+        },
+        {
+            type: 'input',
+            name: 'salary',
+            message: 'What is the salary of the role?',
+        },
         {
             type: 'list',
-            name: 'employee',
-            // https://stackoverflow.com/questions/6257619/how-get-an-apostrophe-in-a-string-in-javascript
-            message: 'Which employee\'s role do you want to update?',
-            choices: []
-        }
-    )
+            name: 'dept',
+            message: 'What department does this role belong to?',
+            // https://stackoverflow.com/questions/66626936/inquirer-js-populate-list-choices-from-sql-database
+            // https://stackoverflow.com/questions/67939758/function-to-return-a-choices-array-in-npm-inquirer-javascript
+            // https://stackoverflow.com/questions/64220107/passing-sql-queries-into-inquirer-prompt
+            // https://stackoverflow.com/questions/63005429/passing-promises-with-mysql-nodejs
+            choices: deptName(),
+        },
+    ]).then(answer => {
+        db.promise().query("INSERT INTO role (title, salary, department_id) VALUES (answer.nameRole, answer.salary, answer.dept")
+        console.log(`Added ${answer.nameRole} to the database`);
+    })
 };
+
+function deptName() {
+    const dpts = db.promise().query('SELECT name FROM department');
+    return dpts[0];
+}
+
+function upRole() {
+    inquirer.prompt([
+        {
+            type: 'list',
+            name: 'emp',
+            message: 'Which employee\'s role do you want to update?',
+            choices: [list of employees],
+        },
+        {
+            type: 'list',
+            name: 'role',
+            message: 'Which role do you want to assign the selected employee?',
+            choices: [list of roles],
+        },
+    ]).then(answer => {
+        console.log(`Updated ${answer.emp}\'s role`);
+    });
+};
+
 function viewRole() {
     db.promise().query("SELECT rl.id, rl.title, dpt.name AS department, rl.salary FROM role AS rl JOIN department AS dpt ON rl.department_id = dpt.id")
         .then(([rows, fields]) => {
@@ -101,6 +150,7 @@ function viewRole() {
         })
         .catch(e => console.log(e))
 };
+
 function viewDept() {
     db.promise().query("SELECT * FROM departments")
         .then(([rows, fields]) => {
@@ -109,6 +159,7 @@ function viewDept() {
         })
         .catch(e => console.log(e))
 };
+
 function viewEmp() {
     db.promise().query("SELECT emp.id, emp.first_name, emp.last_name, rl.title, dpt.name AS department, rl.salary FROM employee AS emp JOIN role AS rl ON rl.id = emp.role_id JOIN department AS dpt ON dpt.id = rl.department_id")
         .then(([rows, fields]) => {
