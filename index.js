@@ -42,13 +42,16 @@ function intro() {
                 upRole();
                 break;
             case 'View All Roles':
-                viewRole();
+                viewAllRole();
                 break;
             case 'View All Departments':
-                viewDept();
+                viewAllDept();
                 break;
             case 'View All Employees':
-                viewEmp();
+                viewAllEmp();
+                break;
+            case 'View Total Utilized Budget By Department':
+                viewBudget();
                 break;
             default:
                 db.end();
@@ -56,8 +59,23 @@ function intro() {
     })
 };
 
-
+// https://www.w3schools.com/nodejs/nodejs_mysql_select.asp
 function addEmp() {
+    let roleChoice = [];
+    let roleQuery = 'SELECT title FROM role';
+    // https://stackoverflow.com/questions/68490589/node30437-unhandledpromiserejectionwarning-error-callback-function-is-not-a
+    db.query(roleQuery, (err, res) => {
+        for (let i = 0; i < res.length; i++) {
+            roleChoice.push({ name: res[i].title, value: res[i].id });
+        }
+    });
+    let mngChoice = [];
+    let mngQuery = 'SELECT * FROM employee WHERE manager_id IS null ';
+    db.query(mngQuery, (err, res) => {
+        for (let i = 0; i < res.length; i++) {
+            mngChoice.push({ name: res[i].first_name + " " + res[i].last_name, value: res[i].id });
+        }  
+    });
     inquirer.prompt([
         {
             type: 'input',
@@ -73,16 +91,18 @@ function addEmp() {
             type: 'list',
             name: 'role',
             message: 'What is the employee\'s role?',
-            choices: [list of roles],
+            choices: roleChoice,
         },
         {
             type: 'list',
             name: 'mng',
             message: 'Who is the employee\'s manager?',
-            choices: [list of managers],
+            choices: mngChoice,
         },
     ]).then(answer => {
+        db.promise().query("INSERT INTO employee (first_name, last_name, role-id, manager_id) VALUES(?, ?, ?, ?)", [answer.firstName, answer.lastName, answer.role, answer.mng])
         console.log(`Added ${answer.firstName} ${answer.lastName} to the database`);
+        intro();
     });
 };
 
@@ -91,6 +111,13 @@ function addDept() {
 };
 
 function addRole() {
+    let dptchoice = [];
+    let dptquery = 'SELECT * FROM department';
+    db.query(dptquery, (err, res) => {
+        for (let i = 0; i < res.length; i++) {
+            dptchoice.push({ name: res[i].name, value: res[i].id });
+        }
+    });
     inquirer.prompt([
         {
             type: 'input',
@@ -106,22 +133,14 @@ function addRole() {
             type: 'list',
             name: 'dept',
             message: 'What department does this role belong to?',
-            // https://stackoverflow.com/questions/66626936/inquirer-js-populate-list-choices-from-sql-database
-            // https://stackoverflow.com/questions/67939758/function-to-return-a-choices-array-in-npm-inquirer-javascript
-            // https://stackoverflow.com/questions/64220107/passing-sql-queries-into-inquirer-prompt
-            // https://stackoverflow.com/questions/63005429/passing-promises-with-mysql-nodejs
-            choices: deptName(),
+            choices: dptchoice,
         },
     ]).then(answer => {
-        db.promise().query("INSERT INTO role (title, salary, department_id) VALUES (answer.nameRole, answer.salary, answer.dept")
+        db.promise().query("INSERT INTO role (title, salary, department_id) VALUES(?, ?, ?)", [answer.nameRole, answer.salary, answer.dept])
         console.log(`Added ${answer.nameRole} to the database`);
+        intro();
     })
 };
-
-function deptName() {
-    const dpts = db.promise().query('SELECT name FROM department');
-    return dpts[0];
-}
 
 function upRole() {
     inquirer.prompt([
@@ -129,20 +148,21 @@ function upRole() {
             type: 'list',
             name: 'emp',
             message: 'Which employee\'s role do you want to update?',
-            choices: [list of employees],
+            choices: ["list of employees"],
         },
         {
             type: 'list',
             name: 'role',
             message: 'Which role do you want to assign the selected employee?',
-            choices: [list of roles],
+            choices: ["list of roles"],
         },
     ]).then(answer => {
         console.log(`Updated ${answer.emp}\'s role`);
+        intro();
     });
 };
 
-function viewRole() {
+function viewAllRole() {
     db.promise().query("SELECT rl.id, rl.title, dpt.name AS department, rl.salary FROM role AS rl JOIN department AS dpt ON rl.department_id = dpt.id")
         .then(([rows, fields]) => {
             console.table(rows);
@@ -151,7 +171,7 @@ function viewRole() {
         .catch(e => console.log(e))
 };
 
-function viewDept() {
+function viewAllDept() {
     db.promise().query("SELECT * FROM departments")
         .then(([rows, fields]) => {
             console.table(rows);
@@ -160,7 +180,7 @@ function viewDept() {
         .catch(e => console.log(e))
 };
 
-function viewEmp() {
+function viewAllEmp() {
     db.promise().query("SELECT emp.id, emp.first_name, emp.last_name, rl.title, dpt.name AS department, rl.salary FROM employee AS emp JOIN role AS rl ON rl.id = emp.role_id JOIN department AS dpt ON dpt.id = rl.department_id")
         .then(([rows, fields]) => {
             console.table(rows);
@@ -168,3 +188,10 @@ function viewEmp() {
         })
         .catch(e => console.log(e))
 };
+
+function delEmp() {
+
+};
+// function viewBudget(); {
+//     db.promise().query("")
+// };
