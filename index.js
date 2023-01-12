@@ -54,20 +54,34 @@ function intro() {
                 break;
             default:
                 db.end();
-        }         
+        }
     })
 };
 
 
-// function addEmp() {
+function addEmp() {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'addemp',
+            message: 'What is the employee\'s first name?',
+        }
+        {
+            type: 'input',
+            name: 'addemp',
+            message: 'What is the employee\'s last name?',
+        }
+    ])
+};
 
-// };
-// function addDept() {
+function addDept() {
 
-// };
-// function addRole() {
+};
 
-// };
+function addRole() {
+
+};
+
 function upRole() {
     inquirer.prompt(
         {
@@ -78,9 +92,9 @@ function upRole() {
             choices: []
         }
     )
- };
+};
 function viewRole() {
-    db.promise().query("SELECT * FROM role")
+    db.promise().query("SELECT rl.id, rl.title, dpt.name AS department, rl.salary FROM role AS rl JOIN department AS dpt ON rl.department_id = dpt.id")
         .then(([rows, fields]) => {
             console.table(rows);
             intro();
@@ -88,7 +102,7 @@ function viewRole() {
         .catch(e => console.log(e))
 };
 function viewDept() {
-    db.promise().query("SELECT * FROM department")
+    db.promise().query("SELECT * FROM departments")
         .then(([rows, fields]) => {
             console.table(rows);
             intro();
@@ -96,10 +110,10 @@ function viewDept() {
         .catch(e => console.log(e))
 };
 function viewEmp() {
-    db.promise().query("SELECT * FROM employee")
+    db.promise().query("SELECT emp.id, emp.first_name, emp.last_name, rl.title, dpt.name AS department, rl.salary FROM employee AS emp JOIN role AS rl ON rl.id = emp.role_id JOIN department AS dpt ON dpt.id = rl.department_id")
         .then(([rows, fields]) => {
             console.table(rows);
             intro();
         })
-        .catch(e => console.log(e))        
+        .catch(e => console.log(e))
 };
