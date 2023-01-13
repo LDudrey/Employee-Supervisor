@@ -25,6 +25,9 @@ function intro() {
                 'View All Roles',
                 'View All Departments',
                 'View All Employees',
+                'Delete Employee',
+                'Delete Department',
+                'Delete Role',
                 'Quit']
         }
     ).then(answer => {
@@ -50,9 +53,6 @@ function intro() {
             case 'View All Employees':
                 viewAllEmp();
                 break;
-            case 'View Total Utilized Budget By Department':
-                viewBudget();
-                break;
             default:
                 db.end();
         }
@@ -60,21 +60,31 @@ function intro() {
 };
 
 // https://www.w3schools.com/nodejs/nodejs_mysql_select.asp
+// https://stackoverflow.com/questions/68490589/node30437-unhandledpromiserejectionwarning-error-callback-function-is-not-a
 function addEmp() {
-    let roleChoice = [];
+    let roleAdd = [];
     let roleQuery = 'SELECT title FROM role';
-    // https://stackoverflow.com/questions/68490589/node30437-unhandledpromiserejectionwarning-error-callback-function-is-not-a
     db.query(roleQuery, (err, res) => {
-        for (let i = 0; i < res.length; i++) {
-            roleChoice.push({ name: res[i].title, value: res[i].id });
+        try {
+            for (let i = 0; i < res.length; i++) {
+                roleAdd.push({ name: res[i].title, value: res[i].id });
+            }
+        }
+        catch (err) {
+            res.status(500).json(err);
         }
     });
-    let mngChoice = [];
-    let mngQuery = 'SELECT * FROM employee WHERE manager_id IS null ';
+    let mngAdd = [];
+    let mngQuery = 'SELECT * FROM employee WHERE manager_id IS null';
     db.query(mngQuery, (err, res) => {
-        for (let i = 0; i < res.length; i++) {
-            mngChoice.push({ name: res[i].first_name + " " + res[i].last_name, value: res[i].id });
-        }  
+        try {
+            for (let i = 0; i < res.length; i++) {
+                mngAdd.push({ name: res[i].first_name + " " + res[i].last_name, value: res[i].id });
+            }
+        }
+        catch (err) {
+            res.status(500).json(err);
+        }
     });
     inquirer.prompt([
         {
@@ -91,31 +101,46 @@ function addEmp() {
             type: 'list',
             name: 'role',
             message: 'What is the employee\'s role?',
-            choices: roleChoice,
+            choices: roleAdd,
         },
         {
             type: 'list',
             name: 'mng',
             message: 'Who is the employee\'s manager?',
-            choices: mngChoice,
+            choices: mngAdd,
         },
     ]).then(answer => {
-        db.promise().query("INSERT INTO employee (first_name, last_name, role-id, manager_id) VALUES(?, ?, ?, ?)", [answer.firstName, answer.lastName, answer.role, answer.mng])
+        db.promise().query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)", [answer.firstName, answer.lastName, answer.role, answer.mng]).catch(e => console.log(e))
         console.log(`Added ${answer.firstName} ${answer.lastName} to the database`);
         intro();
     });
 };
 
 function addDept() {
-
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'nameDept',
+            message: 'What is the name of the department?',
+        },
+    ]).then(answer => {
+        db.promise().query("INSERT INTO department (name) VALUES(?)", [answer.nameDept]).catch(e => console.log(e))
+        console.log(`Added ${answer.nameDept} to the database`);
+        intro();
+    })
 };
 
 function addRole() {
     let dptchoice = [];
     let dptquery = 'SELECT * FROM department';
     db.query(dptquery, (err, res) => {
-        for (let i = 0; i < res.length; i++) {
-            dptchoice.push({ name: res[i].name, value: res[i].id });
+        try {
+            for (let i = 0; i < res.length; i++) {
+                dptchoice.push({ name: res[i].name, value: res[i].id });
+            }
+        }
+        catch (err) {
+            res.status(500).json(err);
         }
     });
     inquirer.prompt([
@@ -136,27 +161,52 @@ function addRole() {
             choices: dptchoice,
         },
     ]).then(answer => {
-        db.promise().query("INSERT INTO role (title, salary, department_id) VALUES(?, ?, ?)", [answer.nameRole, answer.salary, answer.dept])
+        db.promise().query("INSERT INTO role (title, salary, department_id) VALUES(?, ?, ?)", [answer.nameRole, answer.salary, answer.dept]).catch(e => console.log(e))
         console.log(`Added ${answer.nameRole} to the database`);
         intro();
     })
 };
 
 function upRole() {
+    let empChoice = [];
+    let empQuery = 'SELECT * FROM employee';
+    db.query(empQuery, (err, res) => {
+        try {
+            for (let i = 0; i < res.length; i++) {
+                empChoice.push({ name: res[i].first_name + " " + res[i].last_name, value: res[i].id });
+            }console.log(empChoice);
+        }
+        catch (err) {
+            res.status(500).json(err);
+        }
+    });
+    let roleChoice = [];
+    let roleQuery = 'SELECT title FROM role';
+    db.query(roleQuery, (err, res) => {
+        try {
+            for (let i = 0; i < res.length; i++) {
+                roleChoice.push({ name: res[i].title, value: res[i].id });
+            }
+        }
+        catch (err) {
+            res.status(500).json(err);
+        }
+    });
     inquirer.prompt([
         {
             type: 'list',
             name: 'emp',
             message: 'Which employee\'s role do you want to update?',
-            choices: ["list of employees"],
+            choices: empChoice,
         },
         {
             type: 'list',
             name: 'role',
             message: 'Which role do you want to assign the selected employee?',
-            choices: ["list of roles"],
+            choices: roleChoice,
         },
     ]).then(answer => {
+        db.promise().query('UPDATE employee SET role_id = answer.role').catch(e => console.log(e))
         console.log(`Updated ${answer.emp}\'s role`);
         intro();
     });
@@ -172,7 +222,7 @@ function viewAllRole() {
 };
 
 function viewAllDept() {
-    db.promise().query("SELECT * FROM departments")
+    db.promise().query("SELECT * FROM department")
         .then(([rows, fields]) => {
             console.table(rows);
             intro();
@@ -189,9 +239,3 @@ function viewAllEmp() {
         .catch(e => console.log(e))
 };
 
-function delEmp() {
-
-};
-// function viewBudget(); {
-//     db.promise().query("")
-// };
