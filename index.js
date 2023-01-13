@@ -27,6 +27,7 @@ function intro() {
                 'View All Employees',
                 'Delete Employee',
                 'Delete Role',
+                'Delete Department',
                 'Quit']
         }
     ).then(answer => {
@@ -58,6 +59,9 @@ function intro() {
             case 'Delete Role':
                 delRole();
                 break;
+            case 'Delete Department':
+                delDept();
+                break;
             default:
                 db.end();
         }
@@ -79,14 +83,13 @@ function addEmp() {
 
         let mngQuery = 'SELECT * FROM employee WHERE manager_id IS null';
         db.query(mngQuery, (err, res) => {
-
             const mngAdd = res.map((element) => {
                 return {
                     name: `${element.first_name} ${element.last_name}`,
                     value: element.id,
                 };
             });
-
+            
             inquirer.prompt([
                 {
                     type: 'input',
@@ -108,7 +111,7 @@ function addEmp() {
                     type: 'list',
                     name: 'mng',
                     message: 'Who is the employee\'s manager?',
-                    choices: mngAdd,
+                    choices: mngList,
                 },
 
             ]).then(answer => {
@@ -287,8 +290,63 @@ function delRole() {
         ]).then(answer => {
             db.promise().query('DELETE FROM role WHERE id = ?', [answer.role, answer.id])
                 .catch(e => console.log(e))
-            console.log(`Deleted ${answer.emp}from the database`);
+            console.log(`Deleted ${answer.role}from the database`);
             intro();
         });
     })
 };
+
+function delDept() {
+    let dptQuery = 'SELECT id, name FROM department';
+    db.query(dptQuery, (err, res) => {
+
+        const dptChoice = res.map((element) => {
+            return {
+                name: `${element.name}`,
+                value: element.id,
+            };
+        });
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'dpt',
+                message: 'Which department do you want to delete?',
+                choices: dptChoice,
+            },
+        ]).then(answer => {
+            db.promise().query('DELETE FROM department WHERE id = ?', [answer.dpt, answer.id])
+                .catch(e => console.log(e))
+            console.log(`Deleted ${answer.dpt}from the database`);
+            intro();
+        });
+    });
+};
+
+// function viewEmpDept() {
+//     let dptQuery = 'SELECT id, name FROM department';
+//     db.query(dptQuery, (err, res) => {
+
+//         const dptChoice = res.map((element) => {
+//             return {
+//                 name: `${element.name}`,
+//                 value: element.id,
+//             };
+//         });
+//         inquirer.prompt([
+//             {
+//                 type: 'list',
+//                 name: 'dpt',
+//                 message: 'Which department employees list do you want to view?',
+//                 choices: dptChoice,
+//             },
+//         ]).then(answer => {
+//             db.promise().query('SELECT * FROM employee WHERE id = ?', [answer.dpt, answer.id])
+//             .then(([rows, fields]) => {
+//                 console.table(rows);
+//                 intro();
+//             })
+//             .catch(e => console.log(e))
+//             intro();
+//         });
+//     });
+// };
