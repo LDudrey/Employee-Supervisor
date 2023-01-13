@@ -25,6 +25,8 @@ function intro() {
                 'View All Roles',
                 'View All Departments',
                 'View All Employees',
+                'Delete Employee',
+                'Delete Role',
                 'Quit']
         }
     ).then(answer => {
@@ -50,6 +52,12 @@ function intro() {
             case 'View All Employees':
                 viewAllEmp();
                 break;
+            case 'Delete Employee':
+                delEmp();
+                break;
+            case 'Delete Role':
+                delRole();
+                break;
             default:
                 db.end();
         }
@@ -59,7 +67,7 @@ function intro() {
 // https://www.w3schools.com/nodejs/nodejs_mysql_select.asp
 // https://stackoverflow.com/questions/68490589/node30437-unhandledpromiserejectionwarning-error-callback-function-is-not-a
 function addEmp() {
-    let roleQuery = 'SELECT title FROM role';
+    let roleQuery = 'SELECT id, title FROM role';
     db.query(roleQuery, (err, res) => {
 
         const roleAdd = res.map((element) => {
@@ -102,11 +110,11 @@ function addEmp() {
                     message: 'Who is the employee\'s manager?',
                     choices: mngAdd,
                 },
-                
+
             ]).then(answer => {
                 console.log(answer);
                 db.promise().query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)", [answer.firstName, answer.lastName, answer.role, answer.mng])
-                .catch(e => console.log(e))
+                    .catch(e => console.log(e))
                 console.log(`Added ${answer.firstName} ${answer.lastName} to the database`);
                 intro();
             });
@@ -226,7 +234,7 @@ function viewAllDept() {
 };
 
 function viewAllEmp() {
-    db.promise().query("SELECT emp.id, emp.first_name, emp.last_name, rl.title, dpt.name AS department, rl.salary, emp.manager_id FROM employee AS emp LEFT JOIN role AS rl ON rl.id = emp.role_id LEFT JOIN department AS dpt ON dpt.id = rl.department_id")
+    db.promise().query("SELECT emp.id, emp.first_name, emp.last_name, rl.title, dpt.name AS department, rl.salary, emp.manager_id AS manager FROM employee AS emp LEFT JOIN role AS rl ON rl.id = emp.role_id LEFT JOIN department AS dpt ON dpt.id = rl.department_id")
         .then(([rows, fields]) => {
             console.table(rows);
             intro();
@@ -234,3 +242,53 @@ function viewAllEmp() {
         .catch(e => console.log(e))
 };
 
+function delEmp() {
+    let empQuery = 'SELECT * FROM employee';
+    db.query(empQuery, (err, res) => {
+        const empChoice = res.map((element) => {
+            return {
+                name: `${element.first_name} ${element.last_name}`,
+                value: element.id,
+            };
+        });
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'emp',
+                message: 'Which employee do you want to delete?',
+                choices: empChoice,
+            },
+        ]).then(answer => {
+            db.promise().query('DELETE FROM employee WHERE id = ?', [answer.emp, answer.id])
+                .catch(e => console.log(e))
+            console.log(`Deleted ${answer.emp}from the database`);
+            intro();
+        });
+    })
+};
+
+function delRole() {
+    let roleQuery = 'SELECT id, title FROM role';
+    db.query(roleQuery, (err, res) => {
+
+        const roleChoice = res.map((element) => {
+            return {
+                name: `${element.title}`,
+                value: element.id,
+            };
+        });
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'role',
+                message: 'Which role do you want to delete?',
+                choices: roleChoice,
+            },
+        ]).then(answer => {
+            db.promise().query('DELETE FROM role WHERE id = ?', [answer.role, answer.id])
+                .catch(e => console.log(e))
+            console.log(`Deleted ${answer.emp}from the database`);
+            intro();
+        });
+    })
+};
