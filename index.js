@@ -25,9 +25,6 @@ function intro() {
                 'View All Roles',
                 'View All Departments',
                 'View All Employees',
-                'Delete Employee',
-                'Delete Department',
-                'Delete Role',
                 'Quit']
         }
     ).then(answer => {
