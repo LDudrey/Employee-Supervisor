@@ -59,34 +59,19 @@ function intro() {
 // https://www.w3schools.com/nodejs/nodejs_mysql_select.asp
 // https://stackoverflow.com/questions/68490589/node30437-unhandledpromiserejectionwarning-error-callback-function-is-not-a
 function addEmp() {
-    // let roleAdd = [];
     let roleQuery = 'SELECT title FROM role';
     db.query(roleQuery, (err, res) => {
-        // try {
-        //     for (let i = 0; i < res.length; i++) {
-        //         roleAdd.push({ name: res[i].title, value: res[i].id });
-        //     }
-        // }
-        // catch (err) {
-        //     res.status(500).json(err);
-        // }
+
         const roleAdd = res.map((element) => {
             return {
                 name: `${element.title}`,
                 value: element.id,
             };
         });
-        // let mngAdd = [];
+
         let mngQuery = 'SELECT * FROM employee WHERE manager_id IS null';
         db.query(mngQuery, (err, res) => {
-            // try {
-            //     for (let i = 0; i < res.length; i++) {
-            //         mngAdd.push({ name: res[i].first_name + " " + res[i].last_name, value: res[i].id });
-            //     }
-            // }
-            // catch (err) {
-            //     res.status(500).json(err);
-            // }
+
             const mngAdd = res.map((element) => {
                 return {
                     name: `${element.first_name} ${element.last_name}`,
@@ -117,8 +102,11 @@ function addEmp() {
                     message: 'Who is the employee\'s manager?',
                     choices: mngAdd,
                 },
+                
             ]).then(answer => {
-                db.promise().query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)", [answer.firstName, answer.lastName, answer.role, answer.mng]).catch(e => console.log(e))
+                console.log(answer);
+                db.promise().query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)", [answer.firstName, answer.lastName, answer.role, answer.mng])
+                .catch(e => console.log(e))
                 console.log(`Added ${answer.firstName} ${answer.lastName} to the database`);
                 intro();
             });
