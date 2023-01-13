@@ -111,7 +111,7 @@ function addEmp() {
                     type: 'list',
                     name: 'mng',
                     message: 'Who is the employee\'s manager?',
-                    choices: mngList,
+                    choices: mngAdd,
                 },
 
             ]).then(answer => {
